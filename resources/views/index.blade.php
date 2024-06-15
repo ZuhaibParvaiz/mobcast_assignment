@@ -1,35 +1,64 @@
-<form id="fetchNewsForm">
-    @csrf
-    <button type="button" id="fetchNewsButton">Fetch News Articles</button>
-</form>
-<ul id="newsList">
-    <!-- News articles will be displayed here -->
-</ul>
+<!DOCTYPE html>
+<html>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $('#fetchNewsButton').click(function() {
+<head>
+    <title>Times of India RSS Feed</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-3">Times of India RSS Feed</h2>
+        <table id="rss-feed-table" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be populated here dynamically -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Include jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            fetchRssFeedData();
+        });
+
+        function fetchRssFeedData() {
             $.ajax({
-                url: '{{ route("fetch.news") }}',
+                url: '/fetch-data',
                 type: 'GET',
-                beforeSend: function() {
-                    // Show loading spinner or disable button
-                },
+                dataType: 'json',
                 success: function(response) {
-                    // Update UI with fetched news articles
-                    $('#newsList').empty();
-                    response.newsArticles.forEach(function(article) {
-                        $('#newsList').append('<li><strong>' + article.title + '</strong><br>' + article.published_at + '<br><a href="' + article.link + '" target="_blank">' + article.link + '</a><br><p>' + article.description + '</p></li>');
-                    });
+                    displayRssFeed(response.items);
                 },
-                error: function(xhr, status, error) {
-                    // Handle error
-                },
-                complete: function() {
-                    // Hide loading spinner or enable button
+                error: function(error) {
+                    console.error('Error fetching data', error);
                 }
             });
-        });
-    });
-</script>
+        }
+
+        function displayRssFeed(items) {
+            var tbody = $('#rss-feed-table tbody');
+            tbody.empty(); // Clear existing rows
+
+            items.forEach(function(item) {
+                var row = $('<tr>');
+                row.append($('<td>').text(item.title));
+                row.append($('<td>').text(item.description));
+                row.append($('<td>').html('<a href="' + item.link + '" target="_blank">' + item.link + '</a>'));
+                tbody.append(row);
+            });
+        }
+    </script>
+</body>
+
+</html>
